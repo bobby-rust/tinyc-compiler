@@ -5,9 +5,6 @@
 
 #define MAX_FILE_LENGTH 100
 #define MAX_NUM_TOKENS MAX_FILE_LENGTH // can only have as many tokens as characters in the file
-#define MAX_LEXEME_LENGTH 20
-#define MAX_LITERAL_LENGTH 20
-#define MAX_TOKEN_LENGTH 100
 
 typedef enum
 {
@@ -41,7 +38,7 @@ static const char *tokenTypeString[] = {"left_paren", "right_paren", "left_brace
 typedef struct
 {
     TokenType type;
-    char lexeme[MAX_LEXEME_LENGTH]; // holds the lexeme as it appears in the source code, will always have a lexeme so no dynamic memory allocation needed
+    char *lexeme; // holds the lexeme as it appears in the source code
     int line;
     char *stringLiteral;
     char *identifierLiteral;
@@ -49,9 +46,9 @@ typedef struct
 } Token;
 
 void readFileContents(FILE *fptr);
-void addToken(Token token);
-void createToken(Token *token, TokenType type, char lexeme[MAX_LEXEME_LENGTH], char *stringLiteral, char *identifierLiteral, int integerLiteral, int line);
-void setLiteral(Token *token, const char literal[MAX_LITERAL_LENGTH]);
+void addToken(Token *token);
+void createToken(Token *token, TokenType type, char *lexeme, char *stringLiteral, char *identifierLiteral, int integerLiteral, int line);
+void setLiteral(Token *token, char *literal);
 void freeTokens();
 void printTokens();
 

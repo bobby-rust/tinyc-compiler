@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "lexer.h"
 
-Token tokens[MAX_NUM_TOKENS];
+Token *tokens[MAX_NUM_TOKENS];
 char contents[MAX_FILE_LENGTH];
 int length = 0;
 int num_tokens = 0;
@@ -32,7 +32,7 @@ int main()
             Token *token = (Token *)malloc(sizeof(Token));
             TokenType type = PLUS;
             createToken(token, type, &ch, NULL, NULL, -1, line);
-            addToken(*token);
+            addToken(token);
             break;
         case 'a':
 
@@ -61,7 +61,7 @@ void readFileContents(FILE *fptr)
     }
 }
 
-void addToken(Token token)
+void addToken(Token *token)
 {
     if (num_tokens >= MAX_NUM_TOKENS)
         return;
@@ -69,7 +69,7 @@ void addToken(Token token)
     tokens[num_tokens++] = token;
 }
 
-void createToken(Token *token, TokenType type, char lexeme[MAX_LEXEME_LENGTH], char *stringLiteral, char *identifierLiteral, int integerLiteral, int line)
+void createToken(Token *token, TokenType type, char *lexeme, char *stringLiteral, char *identifierLiteral, int integerLiteral, int line)
 {
     token->type = type;
     strcpy(lexeme, token->lexeme);
@@ -77,7 +77,7 @@ void createToken(Token *token, TokenType type, char lexeme[MAX_LEXEME_LENGTH], c
     switch (type)
     {
     case IDENTIFIER:
-        strncpy(token->identifierLiteral, identifierLiteral, MAX_LITERAL_LENGTH);
+        strcpy(token->identifierLiteral, identifierLiteral);
     case INTEGER:
         token->integerLiteral = integerLiteral;
     // ... etc
@@ -92,13 +92,13 @@ void printTokens()
 {
     for (int i = 0; i < num_tokens; ++i)
     {
-        printf("%s %s %d", tokenTypeString[tokens[i].type], tokens[i].lexeme, tokens[i].line);
-        if (tokens[i].stringLiteral != NULL)
-            printf("%s\n", tokens[i].stringLiteral);
-        else if (tokens[i].identifierLiteral != NULL)
-            printf("%s\n", tokens[i].identifierLiteral);
-        else if (tokens[i].integerLiteral != NULL)
-            printf("%s\n", tokens[i].integerLiteral);
+        printf("%s %s %d", tokenTypeString[tokens[i]->type], tokens[i]->lexeme, tokens[i]->line);
+        if (tokens[i]->stringLiteral != NULL)
+            printf("%s\n", tokens[i]->stringLiteral);
+        else if (tokens[i]->identifierLiteral != NULL)
+            printf("%s\n", tokens[i]->identifierLiteral);
+        else if (tokens[i]->integerLiteral != -1)
+            printf("%d\n", tokens[i]->integerLiteral);
         else
             printf("NULL\n");
     }
@@ -106,8 +106,8 @@ void printTokens()
 
 void freeTokens()
 {
-    for (int i = 0; i < sizeof(tokens); ++i)
+    for (int i = 0; i < num_tokens; ++i)
     {
-        free(&tokens[i]);
+        free(tokens[i]);
     }
 }
