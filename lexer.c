@@ -3,8 +3,10 @@
 #include "string.h"
 
 #define MAX_FILE_LENGTH 100
+#define MAX_NUM_TOKENS MAX_FILE_LENGTH // can only have as many tokens as characters in the file
 #define MAX_LEXEME_LENGTH 20
 #define MAX_LITERAL_LENGTH 20
+#define MAX_TOKEN_LENGTH 100
 
 typedef enum
 {
@@ -33,22 +35,30 @@ typedef enum
     END // eof - not sure if needed?
 } TokenType;
 
+typedef union
+{
+    char token[MAX_TOKEN_LENGTH]; // holds the string representation of the enum fields
+} TokenData;
+
 typedef struct
 {
     TokenType type;
-    char lexeme[MAX_LEXEME_LENGTH];
+    TokenData data;
+    char lexeme[MAX_LEXEME_LENGTH]; // holds the lexeme as it appears in the source code
     int line;
-    char *literal;
+    char stringLiteral[MAX_LITERAL_LENGTH];
+    char identifierLiteral[MAX_LITERAL_LENGTH];
+    int integerLiteral;
 } Token;
 
 void readFileContents(FILE *fptr);
 void addToken(Token token);
-void createToken(Token token, TokenType type, char *lexeme, char *literal, int line);
+void createToken(Token *token, TokenType type, const char lexeme[MAX_LEXEME_LENGTH], const char stringLiteral[MAX_LITERAL_LENGTH], const char identifierLiteral[MAX_LITERAL_LENGTH], int integerLiteral, int line);
+void setLiteral(Token *token, const char literal[MAX_LITERAL_LENGTH]);
+void freeTokens();
 void printTokens();
-void setLiteral(Token token, char literal[MAX_LITERAL_LENGTH]);
-void freeTokenLiterals();
 
-Token tokens[MAX_FILE_LENGTH];
+Token tokens[MAX_NUM_TOKENS];
 char contents[MAX_FILE_LENGTH];
 int length = 0;
 int num_tokens = 0;
@@ -73,10 +83,10 @@ int main()
         switch (ch)
         {
         case '+':
-            Token token;
+            Token *token = (Token *)malloc(sizeof(Token));
             TokenType type = PLUS;
-            createToken(token, type, &ch, NULL, line);
-            addToken(token);
+            createToken(token, type, &ch, NULL, NULL, -1, line);
+            addToken(*token);
             break;
         case 'i':
 
@@ -90,7 +100,7 @@ int main()
     fclose(fptr);
 
     printTokens();
-    freeTokenLiterals();
+    freeTokens();
     return 0;
 }
 
@@ -107,23 +117,29 @@ void readFileContents(FILE *fptr)
 
 void addToken(Token token)
 {
-    if (length > MAX_FILE_LENGTH - 1)
+    if (num_tokens >= MAX_NUM_TOKENS)
         return;
 
     tokens[num_tokens++] = token;
 }
 
-void createToken(Token token, TokenType type, char *lexeme, char *literal, int line)
+void createToken(Token *token, TokenType type, const char lexeme[MAX_LEXEME_LENGTH], const char stringLiteral[MAX_LITERAL_LENGTH], const char identifierLiteral[MAX_LITERAL_LENGTH], int integerLiteral, int line)
 {
-    token.type = type;
-    strcpy(lexeme, token.lexeme);
+    token->type = type;
+    strcpy(lexeme, token->lexeme);
 
-    if (literal != NULL)
-        strcpy(literal, token.literal);
-    else
-        token.literal = NULL;
+    switch (type)
+    {
+    case IDENTIFIER:
+        strncpy(token->identifierLiteral, identifierLiteral, MAX_LITERAL_LENGTH);
+    case INTEGER:
+        token->integerLiteral = integerLiteral;
+    // ... etc
+    default:
+        break;
+    }
 
-    token.line = line;
+    token->line = line;
 }
 
 void printTokens()
@@ -131,29 +147,18 @@ void printTokens()
     for (int i = 0; i < num_tokens; ++i)
     {
         printf("%s %s %s", tokens[i].lexeme, tokens[i].type);
-        if (tokens[i].literal != NULL)
-            printf("%s\n", tokens[i].literal);
+        if (tokens[i].stringLiteral != NULL)
+            printf("%s\n", tokens[i].stringLiteral);
         else
             printf("NULL\n");
     }
 }
 
-void setLiteral(Token token, char literal[MAX_LITERAL_LENGTH])
-{
-    char *l = malloc(sizeof(literal));
-    for (int i = 0; i < sizeof(literal); ++i)
-    {
-        l[i] = literal[i];
-    }
-
-    token.literal = l;
-}
-
-void freeTokenLiterals()
+void freeTokens()
 {
     for (int i = 0; i < sizeof(tokens); ++i)
     {
-        free(tokens[i].literal);
+        free(&tokens[i]);
     }
 }
 
