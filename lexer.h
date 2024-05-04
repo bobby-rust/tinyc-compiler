@@ -40,16 +40,23 @@ typedef struct
     TokenType type;
     char *lexeme; // holds the lexeme as it appears in the source code
     int line;
-    char *stringLiteral;
-    char *identifierLiteral;
-    int integerLiteral;
+
+    union
+    {
+        char *identifier;
+        int integer;
+        char *string;
+    } literal;
 } Token;
 
+void lex();
 void readFileContents(FILE *fptr);
 void addToken(Token *token);
-void createToken(Token *token, TokenType type, char *lexeme, char *stringLiteral, char *identifierLiteral, int integerLiteral, int line);
-void setLiteral(Token *token, char *literal);
+void createToken(TokenType type, char *lexeme, int line, int integer, char *identifier, char *string);
+void setLiteral(char *literal);
 void freeTokens();
 void printTokens();
+char *initLexeme(char ch);
+char *initIdentifier(char ch);
 
 #endif // LEXER_H_

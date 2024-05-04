@@ -21,42 +21,80 @@ int main()
     }
 
     readFileContents(fptr);
-
-    char ch;
-    for (int i = 0; i < length; ++i)
-    {
-        ch = contents[i];
-        switch (ch)
-        {
-        case '+':
-            Token *token = (Token *)malloc(sizeof(Token));
-            TokenType type = PLUS;
-            createToken(token, type, &ch, NULL, NULL, -1, line);
-            addToken(token);
-            break;
-        case 'a':
-
-        default:
-            printf("Unexpected character: %c\n", ch);
-            break;
-        }
-        length++;
-    }
+    printf("lexing\n");
+    lex();
 
     fclose(fptr);
 
+    printf("printing tokens\n");
     printTokens();
     freeTokens();
     return 0;
 }
 
+void lex()
+{
+    char ch;
+    for (int i = 0; i < length; ++i)
+    {
+        ch = contents[i];
+        char *lexeme = initLexeme(ch);
+
+        if (isalpha(ch))
+        {
+            char *id = initIdentifier(ch);
+            createToken(IDENTIFIER, lexeme, line, -1, id, NULL);
+            continue;
+        }
+
+        switch (ch)
+        {
+        case '+':
+            createToken(PLUS, lexeme, line, -1, NULL, NULL);
+            break;
+        case '-':
+            createToken(MINUS, lexeme, line, -1, NULL, NULL);
+            break;
+        default:
+            printf("Unexpected character: %c\n", ch);
+            break;
+        }
+    }
+}
+
+char *initLexeme(char ch)
+{
+
+    char *l = malloc(sizeof(char) * 2);
+    if (l == NULL)
+    {
+        fprintf(stderr, "Unable to allocate memory");
+        exit(1);
+    }
+    l[0] = ch;
+    l[1] = '\0';
+    return l;
+}
+
+char *initIdentifier(char ch)
+{
+    char *id = malloc(sizeof(char) * 2);
+    if (id == NULL)
+    {
+        fprintf(stderr, "Unable to allocate memory");
+        exit(1);
+    }
+    id[0] = ch;
+    id[1] = '\0';
+    return id;
+}
+
 void readFileContents(FILE *fptr)
 {
     char ch;
-    for (int i = 0; ((i < MAX_FILE_LENGTH) && (!feof(fptr))); ++i)
+    while ((ch = fgetc(fptr)) != EOF)
     {
-        ch = fgetc(fptr);
-        contents[i] = ch;
+        contents[length] = ch;
         length++;
     }
 }
@@ -69,23 +107,39 @@ void addToken(Token *token)
     tokens[num_tokens++] = token;
 }
 
-void createToken(Token *token, TokenType type, char *lexeme, char *stringLiteral, char *identifierLiteral, int integerLiteral, int line)
+void createToken(TokenType type, char *lexeme, int line, int integer, char *identifier, char *string)
 {
+
+    Token *token = malloc(sizeof(Token));
+    if (token == NULL || lexeme == NULL)
+    {
+        fprintf(stderr, "Unable to allocate memory");
+        exit(1);
+    }
+
     token->type = type;
-    strcpy(lexeme, token->lexeme);
+    token->lexeme = lexeme;
 
     switch (type)
     {
     case IDENTIFIER:
-        strcpy(token->identifierLiteral, identifierLiteral);
+        token->type = IDENTIFIER;
+        token->literal.identifier = identifier;
+        break;
     case INTEGER:
-        token->integerLiteral = integerLiteral;
-    // ... etc
+        token->literal.integer = integer;
+
+    case STRING:
+        token->type = STRING;
+        token->literal.string = string;
+        // ... etc
+
     default:
         break;
     }
 
     token->line = line;
+    addToken(token);
 }
 
 void printTokens()
@@ -93,14 +147,20 @@ void printTokens()
     for (int i = 0; i < num_tokens; ++i)
     {
         printf("%s %s %d", tokenTypeString[tokens[i]->type], tokens[i]->lexeme, tokens[i]->line);
-        if (tokens[i]->stringLiteral != NULL)
-            printf("%s\n", tokens[i]->stringLiteral);
-        else if (tokens[i]->identifierLiteral != NULL)
-            printf("%s\n", tokens[i]->identifierLiteral);
-        else if (tokens[i]->integerLiteral != -1)
-            printf("%d\n", tokens[i]->integerLiteral);
-        else
-            printf("NULL\n");
+
+        switch (tokens[i]->type)
+        {
+        case INTEGER:
+            printf("int: %d", tokens[i]->literal.integer);
+            break;
+        case STRING:
+            printf("string: %s", tokens[i]->literal.string);
+            break;
+        case IDENTIFIER:
+            printf("id: %s", tokens[i]->literal.identifier);
+            break;
+        }
+        printf("\n");
     }
 }
 
@@ -108,6 +168,9 @@ void freeTokens()
 {
     for (int i = 0; i < num_tokens; ++i)
     {
+        free(tokens[i]->lexeme);
+        free(tokens[i]->literal.identifier);
+        free(tokens[i]->literal.string);
         free(tokens[i]);
     }
 }
