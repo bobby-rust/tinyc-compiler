@@ -17,7 +17,7 @@ typedef enum
     LESS,
     PLUS,
     MINUS,
-    EQUALS,
+    EQUAL,
 
     // Literals
     IDENTIFIER,
@@ -41,7 +41,7 @@ typedef struct
     char *lexeme; // holds the lexeme as it appears in the source code
     int line;
 
-    union
+    struct
     {
         char *identifier;
         int integer;
@@ -51,12 +51,12 @@ typedef struct
 
 void lex();
 void readFileContents(FILE *fptr);
+void printFileContents();
 void addToken(Token *token);
 void createToken(TokenType type, char *lexeme, int line, int integer, char *identifier, char *string);
 void setLiteral(char *literal);
 void freeTokens();
 void printTokens();
-char *initLexeme(char ch);
-char *initIdentifier(char ch);
+char *initStr(char ch);
 
 #endif // LEXER_H_
