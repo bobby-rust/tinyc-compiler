@@ -3,6 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+int numCharArrAllocs = 0;
+int numCharArrFrees = 0;
+int numStrAllocs = 0;
+int numStrFrees = 0;
+int numStrArrAllocs = 0;
+int numStrArrFrees = 0;
+int numElementsAllocs = 0;
+int numElementsFrees = 0;
+
 int main(void) {
     StrArr *arr = initStrArr();
 
@@ -18,6 +27,20 @@ int main(void) {
 
         if (strcmp(str->chars, "quit\n") == 0) {
             freeStrArr(arr);
+            free(str);
+            numStrFrees++;
+            printf("Num char arr allocs: %d\nNum char arr frees: %d\n",
+                   numCharArrAllocs, numCharArrFrees);
+
+            printf("Num String allocs: %d\nNum String frees: %d\n",
+                   numStrAllocs, numStrFrees);
+
+            printf("Num String Array Allocs: %d\nNum String Array frees: %d\n",
+                   numStrArrAllocs, numStrArrFrees);
+
+            printf("Num elements allocs: %d\nNum elements frees: %d\n",
+                   numElementsAllocs, numElementsFrees);
+
             break;
         }
 
@@ -41,6 +64,7 @@ String *getStringFromStdin() {
     if (chars_read < 0) {
         puts("Error reading input.");
         free(str);
+        numStrFrees++;
         free(input);
 
         return NULL;
@@ -60,7 +84,9 @@ String *getStringFromStdin() {
  */
 String *initStr() {
     char *chars = malloc(sizeof(char) * INITIAL_SIZE);
+    numCharArrAllocs++;
     String *str = malloc(sizeof(String));
+    numStrAllocs++;
 
     if (chars == NULL || str == NULL) {
         fprintf(stderr, "Unable to allocate memory for string.\n");
@@ -124,6 +150,9 @@ void resizeStr(String *str) {
         exit(1);
     }
 
+    printf("Allocated memory for newChars at %p\n", newChars);
+    numCharArrAllocs++;
+
     char *oldChars = str->chars;
     str->chars = newChars;
 
@@ -135,6 +164,8 @@ void resizeStr(String *str) {
 
     printf("Freeing %p\n", oldChars);
     free(oldChars);
+    numCharArrFrees++;
+
     str->capacity = newCapacity;
     printf("String was resized from %zu to %zu\n", oldCap, newCapacity);
 }
@@ -143,6 +174,8 @@ void freeStr(String *str) {
     printf("Freeing %p and %p\n", str->chars, str);
     free(str->chars);
     free(str);
+    numStrFrees++;
+    numCharArrFrees++;
 }
 
 //
@@ -153,7 +186,9 @@ void freeStr(String *str) {
  */
 StrArr *initStrArr() {
     StrArr *arr = malloc(sizeof(StrArr));
-    String **elements = malloc(sizeof(String) * INITIAL_SIZE);
+    numStrArrAllocs++;
+    String **elements = malloc(sizeof(String *) * INITIAL_SIZE);
+    numElementsAllocs++;
 
     if (arr == NULL || elements == NULL) {
         fprintf(stderr, "Unable to allocate memory for string.\n");
@@ -190,7 +225,8 @@ void resizeStrArr(StrArr *arr) {
     size_t oldCap = arr->capacity;
     size_t newCapacity = arr->capacity * GROWTH_FACTOR;
 
-    String **newElements = malloc(sizeof(String) * newCapacity);
+    String **newElements = malloc(sizeof(String *) * newCapacity);
+    numElementsAllocs++;
 
     if (newElements == NULL) {
         fprintf(stderr, "Unable to allocate memory for new array elements.\n");
@@ -209,6 +245,7 @@ void resizeStrArr(StrArr *arr) {
 
     printf("freeing %p\n", oldElements);
     free(oldElements);
+    numElementsFrees++;
     printf("made it past 3.\n");
     arr->capacity = newCapacity;
 
@@ -226,10 +263,13 @@ void freeStrArr(StrArr *arr) {
      */
     for (size_t i = 0; i < arr->length; ++i) {
         freeStr(arr->elements[i]);
+        numStrFrees++;
     }
 
     printf("Freeing %p.\n", arr->elements);
     free(arr->elements);
+    numElementsFrees++;
     printf("Freeing array %p\n", arr);
     free(arr);
+    numStrArrFrees++;
 }
