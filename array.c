@@ -25,10 +25,11 @@ int main(void) {
             exit(1);
         }
 
+        appendStr(arr, str);
+
         if (strcmp(str->chars, "quit\n") == 0) {
+            printStrArr(arr);
             freeStrArr(arr);
-            free(str);
-            numStrFrees++;
             printf("Num char arr allocs: %d\nNum char arr frees: %d\n",
                    numCharArrAllocs, numCharArrFrees);
 
@@ -43,11 +44,16 @@ int main(void) {
 
             break;
         }
-
-        appendStr(arr, str);
     }
 
     return 0;
+}
+
+void printStrArr(StrArr *arr) {
+    printf("Printing string array.\n");
+    for (size_t i = 0; i < arr->length; ++i) {
+        printf("%s\n", arr->elements[i]->chars);
+    }
 }
 
 String *getStringFromStdin() {
@@ -84,6 +90,7 @@ String *getStringFromStdin() {
  */
 String *initStr() {
     char *chars = malloc(sizeof(char) * INITIAL_SIZE);
+    printf("allocated memory for char arr at: %p\n", chars);
     numCharArrAllocs++;
     String *str = malloc(sizeof(String));
     numStrAllocs++;
@@ -162,7 +169,7 @@ void resizeStr(String *str) {
         }
     }
 
-    printf("Freeing %p\n", oldChars);
+    printf("Freeing char array: %p\n", oldChars);
     free(oldChars);
     numCharArrFrees++;
 
@@ -171,7 +178,7 @@ void resizeStr(String *str) {
 }
 
 void freeStr(String *str) {
-    printf("Freeing %p and %p\n", str->chars, str);
+    printf("Freeing char array: %p\n", str->chars);
     free(str->chars);
     free(str);
     numStrFrees++;
@@ -252,8 +259,6 @@ void resizeStrArr(StrArr *arr) {
     printf("Array was resized from %zu to %zu\n", oldCap, newCapacity);
 }
 
-//
-
 void freeStrArr(StrArr *arr) {
     printf("freeing strings\n");
 
@@ -263,7 +268,6 @@ void freeStrArr(StrArr *arr) {
      */
     for (size_t i = 0; i < arr->length; ++i) {
         freeStr(arr->elements[i]);
-        numStrFrees++;
     }
 
     printf("Freeing %p.\n", arr->elements);

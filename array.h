@@ -16,6 +16,7 @@ typedef struct {
 } StrArr;
 
 String *getStringFromStdin();
+void printStrArr(StrArr *arr);
 
 // String
 String *initStr();
