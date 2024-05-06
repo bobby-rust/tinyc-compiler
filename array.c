@@ -3,24 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-int numCharArrAllocs = 0;
-int numCharArrFrees = 0;
-int numStrAllocs = 0;
-int numStrFrees = 0;
-int numStrArrAllocs = 0;
-int numStrArrFrees = 0;
-int numElementsAllocs = 0;
-int numElementsFrees = 0;
-
 int main(void) {
     StrArr *arr = initStrArr();
 
     while (1) {
-        printf("Getting string from stdin\n");
         String *str = getStringFromStdin();
 
         if (str == NULL) {
-            printf("str is NULL\n");
+            fprintf(stderr, "str is NULL\n");
             freeStrArr(arr);
             exit(1);
         }
@@ -30,18 +20,6 @@ int main(void) {
         if (strcmp(str->chars, "quit\n") == 0) {
             printStrArr(arr);
             freeStrArr(arr);
-            printf("Num char arr allocs: %d\nNum char arr frees: %d\n",
-                   numCharArrAllocs, numCharArrFrees);
-
-            printf("Num String allocs: %d\nNum String frees: %d\n",
-                   numStrAllocs, numStrFrees);
-
-            printf("Num String Array Allocs: %d\nNum String Array frees: %d\n",
-                   numStrArrAllocs, numStrArrFrees);
-
-            printf("Num elements allocs: %d\nNum elements frees: %d\n",
-                   numElementsAllocs, numElementsFrees);
-
             break;
         }
     }
@@ -50,7 +28,6 @@ int main(void) {
 }
 
 void printStrArr(StrArr *arr) {
-    printf("Printing string array.\n");
     for (size_t i = 0; i < arr->length; ++i) {
         printf("%s\n", arr->elements[i]->chars);
     }
@@ -70,16 +47,14 @@ String *getStringFromStdin() {
     if (chars_read < 0) {
         puts("Error reading input.");
         free(str);
-        numStrFrees++;
+        // numStrFrees++;
         free(input);
 
         return NULL;
     }
 
     appendCharArr(str, input);
-    printf("freeing %p\n", input);
     free(input);
-    printf("Made it past 1\n");
     return str;
 }
 
@@ -90,10 +65,7 @@ String *getStringFromStdin() {
  */
 String *initStr() {
     char *chars = malloc(sizeof(char) * INITIAL_SIZE);
-    printf("allocated memory for char arr at: %p\n", chars);
-    numCharArrAllocs++;
     String *str = malloc(sizeof(String));
-    numStrAllocs++;
 
     if (chars == NULL || str == NULL) {
         fprintf(stderr, "Unable to allocate memory for string.\n");
@@ -114,12 +86,8 @@ void appendChar(String *str, char ch) {
 
 void appendCharArr(String *str, char *chars) {
     size_t size = strlen(chars);
-
-    printf("Size of input string is: %zu\n", size);
     size_t spaceNeeded = size + str->length + 1; // + 1 for the null terminator.
-    printf("Space needed is: %zu\n", spaceNeeded);
     size_t oldCap = str->capacity;
-    printf("old capacity is: %zu\n", oldCap);
 
     /**
      * This needs to be a loop because chars could hold any number of elements.
@@ -128,7 +96,6 @@ void appendCharArr(String *str, char *chars) {
      */
     while (spaceNeeded > str->capacity) {
         // reallocate enough memory for chars
-        printf("Resizing string.\n");
         resizeStr(str);
     }
 
@@ -140,25 +107,17 @@ void appendCharArr(String *str, char *chars) {
     for (size_t i = 0; i < size; ++i) {
         appendChar(str, chars[i]);
     }
-
-    printf("length after appending: %zu\n", str->length);
 }
 
 void resizeStr(String *str) {
-    size_t oldCap = str->capacity; // just for debug
-
     // init new string with new capacity
     size_t newCapacity = str->capacity * GROWTH_FACTOR;
-
     char *newChars = malloc(sizeof(char) * newCapacity);
 
     if (newChars == NULL) {
         fprintf(stderr, "Unable to allocate memory for new character array.\n");
         exit(1);
     }
-
-    printf("Allocated memory for newChars at %p\n", newChars);
-    numCharArrAllocs++;
 
     char *oldChars = str->chars;
     str->chars = newChars;
@@ -169,23 +128,14 @@ void resizeStr(String *str) {
         }
     }
 
-    printf("Freeing char array: %p\n", oldChars);
     free(oldChars);
-    numCharArrFrees++;
-
     str->capacity = newCapacity;
-    printf("String was resized from %zu to %zu\n", oldCap, newCapacity);
 }
 
 void freeStr(String *str) {
-    printf("Freeing char array: %p\n", str->chars);
     free(str->chars);
     free(str);
-    numStrFrees++;
-    numCharArrFrees++;
 }
-
-//
 
 /**
  * Initializes a dynamic string array capable of holding <INITIAL_SIZE> strings.
@@ -193,9 +143,7 @@ void freeStr(String *str) {
  */
 StrArr *initStrArr() {
     StrArr *arr = malloc(sizeof(StrArr));
-    numStrArrAllocs++;
     String **elements = malloc(sizeof(String *) * INITIAL_SIZE);
-    numElementsAllocs++;
 
     if (arr == NULL || elements == NULL) {
         fprintf(stderr, "Unable to allocate memory for string.\n");
@@ -213,19 +161,15 @@ StrArr *initStrArr() {
  * Appends a string <str> to the end of the string array <arr>
  */
 void appendStr(StrArr *arr, String *str) {
-
     /**
      * This does not need to be a loop as this function appends
      * exactly one element to the array.
      */
     if (arr->length >= arr->capacity) {
-        printf("resizing string array.\n");
         resizeStrArr(arr);
     }
 
     arr->elements[arr->length++] = str;
-
-    printf("Array length is: %zu\n", arr->length);
 }
 
 void resizeStrArr(StrArr *arr) {
@@ -233,11 +177,9 @@ void resizeStrArr(StrArr *arr) {
     size_t newCapacity = arr->capacity * GROWTH_FACTOR;
 
     String **newElements = malloc(sizeof(String *) * newCapacity);
-    numElementsAllocs++;
 
     if (newElements == NULL) {
         fprintf(stderr, "Unable to allocate memory for new array elements.\n");
-        // I should free here but the OS will do it for me \_( =] )_/
         freeStrArr(arr);
         exit(1);
     }
@@ -250,30 +192,15 @@ void resizeStrArr(StrArr *arr) {
         appendStr(arr, oldElements[i]);
     }
 
-    printf("freeing %p\n", oldElements);
     free(oldElements);
-    numElementsFrees++;
-    printf("made it past 3.\n");
     arr->capacity = newCapacity;
-
-    printf("Array was resized from %zu to %zu\n", oldCap, newCapacity);
 }
 
 void freeStrArr(StrArr *arr) {
-    printf("freeing strings\n");
-
-    /**
-     * Start at 1 because we free the 0th element after the loop with
-     * free(arr->elements)
-     */
     for (size_t i = 0; i < arr->length; ++i) {
         freeStr(arr->elements[i]);
     }
 
-    printf("Freeing %p.\n", arr->elements);
     free(arr->elements);
-    numElementsFrees++;
-    printf("Freeing array %p\n", arr);
     free(arr);
-    numStrArrFrees++;
 }
