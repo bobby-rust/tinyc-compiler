@@ -10,20 +10,22 @@ typedef struct {
 } String;
 
 typedef struct {
-    String *elements;
+    String **elements;
     size_t capacity;
     size_t length;
 } StrArr;
 
+String *getStringFromStdin();
+
 // String
 String *initStr();
 void appendChar(String *str, char ch);
-String *appendCharArr(String *str, char *chars);
+void appendCharArr(String *str, char *chars);
 void resizeStr(String *str);
 void freeStr(String *str);
 
 // String array
 StrArr *initStrArr();
-StrArr *appendStr(StrArr *arr, String *str);
+void appendStr(StrArr *arr, String *str);
 void resizeStrArr(StrArr *arr);
 void freeStrArr(StrArr *arr);
