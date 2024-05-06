@@ -1,31 +1,8 @@
-#include "array.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int main(void) {
-    StrArr *arr = initStrArr();
-
-    while (1) {
-        String *str = getStringFromStdin();
-
-        if (str == NULL) {
-            fprintf(stderr, "str is NULL\n");
-            freeStrArr(arr);
-            exit(1);
-        }
-
-        appendStr(arr, str);
-
-        if (strcmp(str->chars, "quit\n") == 0) {
-            printStrArr(arr);
-            freeStrArr(arr);
-            break;
-        }
-    }
-
-    return 0;
-}
+#include "array.h"
 
 void printStrArr(StrArr *arr) {
     for (size_t i = 0; i < arr->length; ++i) {
@@ -204,3 +181,30 @@ void freeStrArr(StrArr *arr) {
     free(arr->elements);
     free(arr);
 }
+
+/**
+ * Main function for testing purposes only
+ */
+// int main(void) {
+//     StrArr *arr = initStrArr();
+
+//     while (1) {
+//         String *str = getStringFromStdin();
+
+//         if (str == NULL) {
+//             fprintf(stderr, "str is NULL\n");
+//             freeStrArr(arr);
+//             exit(1);
+//         }
+
+//         appendStr(arr, str);
+
+//         if (strcmp(str->chars, "quit\n") == 0) {
+//             printStrArr(arr);
+//             freeStrArr(arr);
+//             break;
+//         }
+//     }
+
+//     return 0;
+// }
