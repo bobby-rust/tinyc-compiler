@@ -1,9 +1,9 @@
-lexer:
-	gcc -o lexer lexer.c -Wall -Wextra -pedantic
+CC = gcc
+CFLAGS = -Wall -Wextra -pedantic
 
-array:
-	gcc -o array array.c -Wall -Wextra -pedantic
+build:
+	$(CC) $(CFLAGS) -o lexer lexer.c string.c file.c
 
 asan:
-	gcc -g -fsanitize=address -o array array.c -Wall -Wextra -pedantic
+	$(CC) $(CFLAGS) -g -fsanitize=address -o lexer_san lexer.c string.c file.c 
 	

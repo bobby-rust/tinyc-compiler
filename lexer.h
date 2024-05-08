@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#include "file.h"
+
 #define MAX_FILE_LENGTH 100
 #define MAX_NUM_TOKENS                                                         \
     MAX_FILE_LENGTH // can only have as many tokens as characters in the file
@@ -49,27 +51,36 @@ static const char *tokenTypeString[] = {
 
 typedef struct {
     TokenType type;
-    char *lexeme; // holds the lexeme as it appears in the source code
-    int line;
+    String *lexeme; // holds the lexeme as it appears in the source code
+    size_t line;
 
     struct {
-        char *identifier;
+        String *identifier;
         int integer;
-        char *string;
-    } literal;
+        String *string;
+    } Literal;
 } Token;
 
-Token *lex(char *buffer, int *line, int *numTokens);
-void readFileContents(FILE *fptr, char *contents);
-char *getNextExprFromInput();
+typedef struct {
+    Token **elements;
+    size_t length;
+    size_t capacity;
+} TokenArr;
+
+// TokenArr
+TokenArr *initTokenArr();
+void appendToken(TokenArr *arr, Token *token);
+void resizeTokenArr(TokenArr *arr);
+void freeTokenArr(TokenArr *arr);
+
+// lexer
+TokenArr *lex(String *buffer);
 void run(char *buffer);
 void printFileContents(char *contents);
-void addToken(Token *token);
-void createToken(TokenType type, char *lexeme, int line, int integer,
-                 char *identifier, char *string);
-void freeTokens();
-void printTokens();
-char *initStr(char ch);
+
+// Token
+Token *initToken();
 void runPrompt();
+void freeToken(Token *token);
 
 #endif // LEXER_H_
