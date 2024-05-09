@@ -38,7 +38,7 @@ typedef enum {
     END // eof - not sure if needed?
 } TokenType;
 
-static const char *tokenTypeString[] = {
+static const char *token_type_string[] = {
     // single character tokens
     "left_paren", "right_paren", "left_brace", "right_brace", "semicolon",
     "less", "greater", "plus", "minus", "equal", "quote", "double_quote",
@@ -65,22 +65,22 @@ typedef struct {
     Token **elements;
     size_t length;
     size_t capacity;
-} TokenArr;
+} TokenArray;
 
 // TokenArr
-TokenArr *initTokenArr();
-void appendToken(TokenArr *arr, Token *token);
-void resizeTokenArr(TokenArr *arr);
-void freeTokenArr(TokenArr *arr);
+TokenArray *init_token_array();
+void append_token(TokenArray *arr, Token *token);
+void resize_token_array(TokenArray *arr);
+void free_token_array(TokenArray *arr);
 
 // lexer
-TokenArr *lex(String *buffer);
+TokenArray *lex(String *buffer);
 void run(char *buffer);
-void printFileContents(char *contents);
+void print_file_contents(char *contents);
 
 // Token
-Token *initToken();
-void runPrompt();
-void freeToken(Token *token);
+Token *init_token();
+void run_prompt();
+void free_token(Token *token);
 
 #endif // LEXER_H_

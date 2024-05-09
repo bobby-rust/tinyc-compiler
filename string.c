@@ -4,14 +4,14 @@
 
 #include "string.h"
 
-void printStrArr(StrArr *arr) {
+void print_str_array(StrArray *arr) {
     for (size_t i = 0; i < arr->length; ++i) {
         printf("%s\n", arr->elements[i]->chars);
     }
 }
 
-String *getStringFromStdin() {
-    String *str = initStr();
+String *get_str_from_stdin() {
+    String *str = init_str();
     if (str == NULL) {
         exit(1);
     }
@@ -30,7 +30,7 @@ String *getStringFromStdin() {
         return NULL;
     }
 
-    appendCharArr(str, input);
+    append_char_array(str, input);
     free(input);
     return str;
 }
@@ -40,7 +40,7 @@ String *getStringFromStdin() {
  * strings. Caller is responsible for calling `free()` on the array and its
  * elements.
  */
-String *initStr() {
+String *init_str() {
     char *chars = malloc(sizeof(char) * INITIAL_SIZE);
     String *str = malloc(sizeof(String));
 
@@ -56,65 +56,66 @@ String *initStr() {
     return str;
 }
 
-void appendChar(String *str, char ch) {
+void append_char(String *str, char ch) {
     str->chars[str->length++] = ch;
     str->chars[str->length] = '\0';
 }
 
-void appendCharArr(String *str, char *chars) {
+void append_char_array(String *str, char *chars) {
     size_t size = strlen(chars);
-    size_t spaceNeeded = size + str->length + 1; // + 1 for the null terminator.
-    size_t oldCap = str->capacity;
+    size_t space_needed =
+        size + str->length + 1; // + 1 for the null terminator.
+    size_t old_cap = str->capacity;
 
     /**
      * This needs to be a loop because chars could hold any number of elements.
      * In other words, it is possible for spaceNeeded to be greater
      * than the growth factor * str->capacity
      */
-    while (spaceNeeded > str->capacity) {
+    while (space_needed > str->capacity) {
         // reallocate enough memory for chars
-        resizeStr(str);
+        resize_str(str);
     }
 
     // resetting length it in the loop would mess with the resize function.
-    if (spaceNeeded > oldCap) {
+    if (space_needed > old_cap) {
         str->length = 0; // reset str length as it is new memory.
     }
 
     for (size_t i = 0; i < size; ++i) {
-        appendChar(str, chars[i]);
+        append_char(str, chars[i]);
     }
 }
 
-void resizeStr(String *str) {
+void resize_str(String *str) {
     // init new string with new capacity
-    size_t newCapacity = str->capacity * GROWTH_FACTOR;
-    char *newChars = malloc(sizeof(char) * newCapacity);
+    size_t new_cap = str->capacity * GROWTH_FACTOR;
+    char *new_chars = malloc(sizeof(char) * new_cap);
 
-    if (newChars == NULL) {
+    if (new_chars == NULL) {
         fprintf(stderr, "Unable to allocate memory for new character array.\n");
         exit(1);
     }
 
-    char *oldChars = str->chars;
-    str->chars = newChars;
+    char *old_chars = str->chars;
+    str->chars = new_chars;
 
     if (str->length > 0) {
         for (size_t i = 0; i < str->length; ++i) {
-            newChars[i] = str->chars[i];
+            new_chars[i] = str->chars[i];
         }
     }
 
-    free(oldChars);
-    str->capacity = newCapacity;
+    free(old_chars);
+    str->capacity = new_cap;
 }
 
-void freeStr(String *str) {
+void free_str(String *str) {
     free(str->chars);
     free(str);
 }
 
-void printStr(String *str) {
+void print_str(String *str) {
     size_t len = str->length;
 
     for (size_t i = 0; i < len; ++i) {
@@ -128,8 +129,8 @@ void printStr(String *str) {
  * Initializes a dynamic string array capable of holding <INITIAL_SIZE> strings.
  * Caller is responsible for calling `free()` on the array and its elements.
  */
-StrArr *initStrArr() {
-    StrArr *arr = malloc(sizeof(StrArr));
+StrArray *init_str_array() {
+    StrArray *arr = malloc(sizeof(StrArray));
     String **elements = malloc(sizeof(String *) * INITIAL_SIZE);
 
     if (arr == NULL || elements == NULL) {
@@ -147,44 +148,44 @@ StrArr *initStrArr() {
 /**
  * Appends a string <str> to the end of the string array <arr>
  */
-void appendStr(StrArr *arr, String *str) {
+void append_str(StrArray *arr, String *str) {
     /**
      * This does not need to be a loop as this function appends
      * exactly one element to the array.
      */
     if (arr->length >= arr->capacity) {
-        resizeStrArr(arr);
+        resize_str_array(arr);
     }
 
     arr->elements[arr->length++] = str;
 }
 
-void resizeStrArr(StrArr *arr) {
-    size_t newCapacity = arr->capacity * GROWTH_FACTOR;
+void resize_str_array(StrArray *arr) {
+    size_t new_cap = arr->capacity * GROWTH_FACTOR;
 
-    String **newElements = malloc(sizeof(String *) * newCapacity);
+    String **new_elements = malloc(sizeof(String *) * new_cap);
 
-    if (newElements == NULL) {
+    if (new_elements == NULL) {
         fprintf(stderr, "Unable to allocate memory for new array elements.\n");
-        freeStrArr(arr);
+        free_str_array(arr);
         exit(1);
     }
 
-    String **oldElements = arr->elements;
-    arr->elements = newElements;
-    size_t numOldEls = arr->length;
+    String **old_elements = arr->elements;
+    arr->elements = new_elements;
+    size_t num_old_elements = arr->length;
     arr->length = 0;
-    for (size_t i = 0; i < numOldEls; ++i) {
-        appendStr(arr, oldElements[i]);
+    for (size_t i = 0; i < num_old_elements; ++i) {
+        append_str(arr, old_elements[i]);
     }
 
-    free(oldElements);
-    arr->capacity = newCapacity;
+    free(old_elements);
+    arr->capacity = new_cap;
 }
 
-void freeStrArr(StrArr *arr) {
+void free_str_array(StrArray *arr) {
     for (size_t i = 0; i < arr->length; ++i) {
-        freeStr(arr->elements[i]);
+        free_str(arr->elements[i]);
     }
 
     free(arr->elements);

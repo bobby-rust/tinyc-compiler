@@ -5,8 +5,8 @@
 
 #include "lexer.h"
 
-TokenArr *initTokenArr() {
-    TokenArr *tokens = malloc(sizeof(TokenArr));
+TokenArray *init_token_array() {
+    TokenArray *tokens = malloc(sizeof(TokenArray));
     tokens->length = 0;
     tokens->capacity = INITIAL_SIZE;
     tokens->elements = malloc(sizeof(Token) * INITIAL_SIZE);
@@ -14,41 +14,41 @@ TokenArr *initTokenArr() {
     return tokens;
 }
 
-void appendToken(TokenArr *arr, Token *token) {
+void append_token(TokenArray *arr, Token *token) {
     if (arr->length >= arr->capacity) {
-        resizeTokenArr(arr);
+        resize_token_array(arr);
     }
 
     arr->elements[arr->length++] = token;
 }
 
-void resizeTokenArr(TokenArr *arr) {
-    TokenArr *newTokens = malloc(sizeof(TokenArr));
+void resize_token_array(TokenArray *arr) {
+    TokenArray *new_tokens = malloc(sizeof(TokenArray));
 
-    size_t newCap = arr->capacity * GROWTH_FACTOR;
-    Token **newElements = malloc(sizeof(Token *) * newCap);
+    size_t new_cap = arr->capacity * GROWTH_FACTOR;
+    Token **new_elements = malloc(sizeof(Token *) * new_cap);
 
     if (arr->length > 0) {
         // copy tokens from old to new
         for (size_t i = 0; i < arr->length; ++i) {
             // No need to create new tokens, just reuse
-            newTokens->elements[i] = arr->elements[i];
+            new_tokens->elements[i] = arr->elements[i];
         }
     }
 
     free(arr->elements);
-    arr->elements = newElements;
+    arr->elements = new_elements;
 }
 
-void freeTokenArr(TokenArr *arr) {
+void freeTokenArr(TokenArray *arr) {
     for (size_t i = 0; i < arr->length; ++i) {
-        freeToken(arr->elements[i]);
+        free_token(arr->elements[i]);
     }
 
     free(arr);
 }
 
-void freeToken(Token *token) {
+void free_token(Token *token) {
     free(token->lexeme);
     free(token->Literal.string);
     free(token->Literal.identifier);
@@ -56,26 +56,26 @@ void freeToken(Token *token) {
 
 int main(int argc, char **argv) {
     if (argc == 1)
-        runPrompt();
+        run_prompt();
 
     int length = 0;
     int line = 1;
-    int numTokens = 0;
-    FILE *fptr = fopen("test.txt", "r");
+    int num_tokens = 0;
+    FILE *fp = fopen("test.txt", "r");
 
-    if (fptr == NULL) {
+    if (fp == NULL) {
         printf("File cannot be opened.\n");
         exit(1);
     }
 
-    FileInfo *fileInfo = readFileContents(fptr);
+    FileInfo *f_info = read_file_contents(fp);
 
-    fclose(fptr);
+    fclose(fp);
 
     return 0;
 }
 
-void runPrompt() {
+void run_prompt() {
     while (1) {
         return;
     }
@@ -84,8 +84,8 @@ void runPrompt() {
 /**
  * Takes a stream of characters, returns a stream of tokens
  */
-TokenArr *lex(String *buffer) {
-    TokenArr *tokens = initTokenArr();
+TokenArray *lex(String *buffer) {
+    TokenArray *tokens = init_token_array();
 
     // do stuff
 
@@ -99,9 +99,9 @@ TokenArr *lex(String *buffer) {
  * `freeStr` or if part of an TokenArr, `freeTokenArr`. Other optional fields
  * are initialized to NULL for String types and -1 for integers.
  */
-Token *initToken() {
+Token *init_token() {
     Token *t = malloc(sizeof(Token));
-    t->lexeme = initStr();
+    t->lexeme = init_str();
     t->Literal.string = NULL;
     t->Literal.identifier = NULL;
     t->line = -1;

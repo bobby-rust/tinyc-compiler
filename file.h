@@ -12,7 +12,7 @@ typedef struct {
 } FileInfo;
 
 // FileInfo
-FileInfo *initFileInfo();
-FileInfo *readFileContents(FILE *fptr);
+FileInfo *init_file_info();
+FileInfo *read_file_contents(FILE *fp);
 
 #endif // FILE_H_
