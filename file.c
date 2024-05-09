@@ -7,6 +7,7 @@ FileInfo *init_file_info() {
     FileInfo *f = malloc(sizeof(FileInfo));
     f->contents = contents;
     f->lines = 0;
+    f->current_pos = 0;
 
     return f;
 }

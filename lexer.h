@@ -69,18 +69,21 @@ typedef struct {
 
 // TokenArr
 TokenArray *init_token_array();
-void append_token(TokenArray *arr, Token *token);
+void append_token(TokenArray *arr, const Token *token);
 void resize_token_array(TokenArray *arr);
 void free_token_array(TokenArray *arr);
+void print_token_array(const TokenArray *arr);
 
 // lexer
-TokenArray *lex(String *buffer);
-void run(char *buffer);
-void print_file_contents(char *contents);
+TokenArray *lex(const String *buffer);
+char get_next_char(const FileInfo *f_info);
+void run(const String *buffer);
+void print_file_contents(const String *contents);
 
 // Token
 Token *init_token();
 void run_prompt();
 void free_token(Token *token);
+void print_token(const Token *token);
 
 #endif // LEXER_H_

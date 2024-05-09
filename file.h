@@ -9,6 +9,7 @@
 typedef struct {
     String *contents;
     size_t lines;
+    size_t current_pos;
 } FileInfo;
 
 // FileInfo

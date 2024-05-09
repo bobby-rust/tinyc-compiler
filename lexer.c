@@ -1,3 +1,13 @@
+/**
+ * Author: Bobby Rust
+ * Date: Spring 2024
+ *
+ * Description:
+ *      This is my first attempt at creating a lexer. This lexer is for a small
+ *      subset of the C programming language. This is purely a pedagogical
+ *      exercise which I hope to continue to complete a full compiler.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,12 +24,12 @@ TokenArray *init_token_array() {
     return tokens;
 }
 
-void append_token(TokenArray *arr, Token *token) {
+void append_token(TokenArray *arr, const Token *token) {
     if (arr->length >= arr->capacity) {
         resize_token_array(arr);
     }
 
-    arr->elements[arr->length++] = token;
+    arr->elements[arr->length++] = (Token *)token;
 }
 
 void resize_token_array(TokenArray *arr) {
@@ -40,7 +50,7 @@ void resize_token_array(TokenArray *arr) {
     arr->elements = new_elements;
 }
 
-void freeTokenArr(TokenArray *arr) {
+void free_token_array(TokenArray *arr) {
     for (size_t i = 0; i < arr->length; ++i) {
         free_token(arr->elements[i]);
     }
@@ -52,6 +62,14 @@ void free_token(Token *token) {
     free(token->lexeme);
     free(token->Literal.string);
     free(token->Literal.identifier);
+}
+
+void print_token(const Token *token) { printf("%s\n", token->lexeme->chars); }
+
+void print_token_array(const TokenArray *arr) {
+    for (size_t i = 0; i < arr->length; ++i) {
+        print_token(arr->elements[i]);
+    }
 }
 
 int main(int argc, char **argv) {
@@ -70,6 +88,10 @@ int main(int argc, char **argv) {
 
     FileInfo *f_info = read_file_contents(fp);
 
+    TokenArray *token_array = lex(f_info->contents);
+
+    print_token_array(token_array);
+
     fclose(fp);
 
     return 0;
@@ -84,7 +106,7 @@ void run_prompt() {
 /**
  * Takes a stream of characters, returns a stream of tokens
  */
-TokenArray *lex(String *buffer) {
+TokenArray *lex(const String *buffer) {
     TokenArray *tokens = init_token_array();
 
     // do stuff
