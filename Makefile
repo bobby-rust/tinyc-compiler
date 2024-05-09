@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := build
+
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
 
@@ -6,4 +8,3 @@ build:
 
 asan:
 	$(CC) $(CFLAGS) -g -fsanitize=address -o lexer_san lexer.c string.c file.c 
-	
