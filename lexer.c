@@ -5,7 +5,7 @@
  * Description:
  *      This is my first attempt at creating a lexer. This lexer is for a small
  *      subset of the C programming language. This is purely a pedagogical
- *      exercise which I hope to continue to complete a full compiler.
+ *      exercise which I hope to continue to complete a full (small) compiler.
  */
 
 #include <stdio.h>
@@ -108,10 +108,17 @@ void run_prompt() {
  */
 TokenArray *lex(const String *buffer) {
     TokenArray *tokens = init_token_array();
-
+    char *cur = next();
     // do stuff
 
     return tokens;
+}
+
+char next(FileInfo *f_info) {
+    if (f_info->current_pos >= f_info->contents->length)
+        return NULL;
+
+    return f_info->contents->chars[f_info->current_pos++];
 }
 
 /**

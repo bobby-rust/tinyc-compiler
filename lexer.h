@@ -76,7 +76,7 @@ void print_token_array(const TokenArray *arr);
 
 // lexer
 TokenArray *lex(const String *buffer);
-char get_next_char(const FileInfo *f_info);
+char next(FileInfo *f_info);
 void run(const String *buffer);
 void print_file_contents(const String *contents);
 
