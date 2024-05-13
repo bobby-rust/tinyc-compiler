@@ -34,8 +34,6 @@ void append_token(TokenArray *arr, const Token *token) {
 }
 
 void resize_token_array(TokenArray *arr) {
-    TokenArray *new_tokens = malloc(sizeof(TokenArray));
-
     size_t new_cap = arr->capacity * GROWTH_FACTOR;
     Token **new_elements = malloc(sizeof(Token *) * new_cap);
 
@@ -43,7 +41,7 @@ void resize_token_array(TokenArray *arr) {
         // copy tokens from old to new
         for (size_t i = 0; i < arr->length; ++i) {
             // No need to create new tokens, just reuse
-            new_tokens->elements[i] = arr->elements[i];
+            new_elements[i] = arr->elements[i];
         }
     }
 
@@ -64,7 +62,9 @@ void free_token(Token *token) {
     free_literal(token->literal);
 }
 
-void print_token(const Token *token) { printf("%s\n", token->lexeme->chars); }
+void print_token(const Token *token) {
+    printf("%s %s\n", token_type_string[token->type], token->lexeme->chars);
+}
 
 void print_token_array(const TokenArray *arr) {
     for (size_t i = 0; i < arr->length; ++i) {
@@ -87,11 +87,6 @@ int main(int argc, char **argv) {
     }
 
     FileInfo *f_info = read_file_contents(fp);
-
-    printf("File info's string information:\n");
-    printf("contents: %s\nlength: %zu\ncapacity: %zu\n",
-           f_info->contents->chars, f_info->contents->length,
-           f_info->contents->capacity);
 
     TokenArray *token_array = lex(f_info->contents, &line);
 
@@ -119,8 +114,13 @@ TokenArray *lex(String *buffer, size_t *line) {
     // do stuff
     for (int i = 0; i < buffer->length; ++i) {
         cur[0] = next(buffer);
+
+        if (cur[0] == EOF)
+            break;
+
         String *str = init_str();
         append_char_array(str, cur);
+
         switch (cur[0]) {
         case '\n':
             line++;
