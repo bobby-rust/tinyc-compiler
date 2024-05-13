@@ -17,13 +17,28 @@ void print_file_contents(FileInfo *f) { print_str(f->contents); }
 FileInfo *read_file_contents(FILE *fp) {
     FileInfo *f = init_file_info();
 
-    char ch;
-    while ((ch = fgetc(fp)) != EOF) {
-        if (ch == '\n')
-            f->lines++;
+    // holds a single character and a null terminator
+    char *ch = malloc(sizeof(char) * 2);
+    ch[0] = fgetc(fp);
+    ch[1] = '\0';
 
-        append_char(f->contents, ch);
+    while (ch[0] != EOF) {
+        if (ch[0] == '\n') {
+            /**
+             * Don't add the last newline as it's superficial
+             */
+            ch[0] = fgetc(fp); // peek next char
+            if (ch[0] == EOF)
+                break;
+
+            f->lines++;
+        }
+
+        append_char_array(f->contents, ch);
+        ch[0] = fgetc(fp);
     }
+
+    free(ch);
 
     return f;
 }

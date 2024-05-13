@@ -10,6 +10,7 @@ typedef struct {
     char *chars;
     size_t length;
     size_t capacity;
+    size_t current_pos;
 } String;
 
 typedef struct {

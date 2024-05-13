@@ -13,6 +13,7 @@ void print_str_array(StrArray *arr) {
 String *get_str_from_stdin() {
     String *str = init_str();
     if (str == NULL) {
+        perror("Unable to allocate memory for String.\n");
         exit(1);
     }
 
@@ -45,18 +46,21 @@ String *init_str() {
     String *str = malloc(sizeof(String));
 
     if (chars == NULL || str == NULL) {
-        fprintf(stderr, "Unable to allocate memory for string.\n");
+        perror("Unable to allocate memory for string.\n");
         return NULL;
     }
 
     str->capacity = INITIAL_SIZE;
     str->length = 0;
     str->chars = chars;
+    str->current_pos = 0;
+    str->chars[0] = '\0';
 
     return str;
 }
 
 void append_char(String *str, char ch) {
+    printf("appending char %c at position %zu\n", ch, str->length);
     str->chars[str->length++] = ch;
     str->chars[str->length] = '\0';
 }
@@ -67,6 +71,12 @@ void append_char_array(String *str, char *chars) {
         size + str->length + 1; // + 1 for the null terminator.
     size_t old_cap = str->capacity;
 
+    printf("----------------- APPEND_CHAR_ARRAY INFO -----------------\n");
+    printf("chars passed: %s\n", chars);
+    printf("length of chars passed: %zu\n", size);
+    printf("str->chars before resizing: %s\n", str->chars);
+    printf("str->capacity: %zu\n", str->capacity);
+    printf("str->length: %zu\n", str->length);
     /**
      * This needs to be a loop because chars could hold any number of elements.
      * In other words, it is possible for spaceNeeded to be greater
@@ -77,14 +87,19 @@ void append_char_array(String *str, char *chars) {
         resize_str(str);
     }
 
-    // resetting length it in the loop would mess with the resize function.
-    if (space_needed > old_cap) {
-        str->length = 0; // reset str length as it is new memory.
-    }
+    printf("str->chars after resizing: %s\n", str->chars);
+    // // resetting length it in the loop would mess with the resize function.
+    // if (space_needed > old_cap) {
+    //     str->length = 0; // reset str length as it is new memory.
+    // }
 
     for (size_t i = 0; i < size; ++i) {
         append_char(str, chars[i]);
     }
+
+    printf("str->length after appending: %zu\n", str->length);
+    printf("str->chars after appending: %s\n", str->chars);
+    printf("--------------------------- END --------------------------\n");
 }
 
 void resize_str(String *str) {
@@ -96,18 +111,21 @@ void resize_str(String *str) {
         fprintf(stderr, "Unable to allocate memory for new character array.\n");
         exit(1);
     }
-
+    size_t old_len = str->length;
     char *old_chars = str->chars;
     str->chars = new_chars;
 
     if (str->length > 0) {
-        for (size_t i = 0; i < str->length; ++i) {
-            new_chars[i] = str->chars[i];
+        str->length = 0;
+        for (size_t i = 0; i < old_len; ++i) {
+            append_char(str, old_chars[i]);
         }
     }
 
     free(old_chars);
     str->capacity = new_cap;
+
+    printf("str->capacity after resizing: %zu\n", str->capacity);
 }
 
 void free_str(String *str) {

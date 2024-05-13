@@ -24,10 +24,8 @@ typedef enum {
     QUOTE,
     DOUBLE_QUOTE,
 
-    // Literals
-    IDENTIFIER,
-    STRING,
-    INTEGER,
+    // Literal.
+    LITERAL,
 
     // multi-character tokens
     NIL,
@@ -35,30 +33,30 @@ typedef enum {
     ELSE,
     DO,
     WHILE,
-    END // eof - not sure if needed?
 } TokenType;
+
+typedef enum { INTEGER, STRING, IDENTIFIER } LiteralType;
 
 static const char *token_type_string[] = {
     // single character tokens
     "left_paren", "right_paren", "left_brace", "right_brace", "semicolon",
     "less", "greater", "plus", "minus", "equal", "quote", "double_quote",
 
-    // literals
-    "identifier", "string", "integer",
+    "literal",
 
     // multi-character tokens
-    "nil", "if", "else", "do", "while", "end"};
+    "nil", "if", "else", "do", "while"};
+
+typedef struct {
+    LiteralType type;
+    void *data;
+} Literal;
 
 typedef struct {
     TokenType type;
     String *lexeme; // holds the lexeme as it appears in the source code
     size_t line;
-
-    struct {
-        String *identifier;
-        int integer;
-        String *string;
-    } Literal;
+    Literal *literal;
 } Token;
 
 typedef struct {
@@ -66,6 +64,11 @@ typedef struct {
     size_t length;
     size_t capacity;
 } TokenArray;
+
+// Literal
+Literal *init_literal();
+Literal *create_literal(LiteralType type, void *data);
+void free_literal(Literal *literal);
 
 // TokenArr
 TokenArray *init_token_array();
@@ -75,13 +78,17 @@ void free_token_array(TokenArray *arr);
 void print_token_array(const TokenArray *arr);
 
 // lexer
-TokenArray *lex(const String *buffer);
-char next(FileInfo *f_info);
+TokenArray *lex(String *buffer, size_t *line);
+char next(String *buffer);
 void run(const String *buffer);
 void print_file_contents(const String *contents);
+void ignore_whitespace(String *buffer);
+void advance(String *buffer);
 
 // Token
 Token *init_token();
+Token *create_token(TokenType type, String *lexeme, size_t line,
+                    Literal *literal);
 void run_prompt();
 void free_token(Token *token);
 void print_token(const Token *token);

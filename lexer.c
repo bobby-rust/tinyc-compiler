@@ -8,6 +8,7 @@
  *      exercise which I hope to continue to complete a full (small) compiler.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,8 +61,7 @@ void free_token_array(TokenArray *arr) {
 
 void free_token(Token *token) {
     free(token->lexeme);
-    free(token->Literal.string);
-    free(token->Literal.identifier);
+    free_literal(token->literal);
 }
 
 void print_token(const Token *token) { printf("%s\n", token->lexeme->chars); }
@@ -76,10 +76,10 @@ int main(int argc, char **argv) {
     if (argc == 1)
         run_prompt();
 
-    int length = 0;
-    int line = 1;
-    int num_tokens = 0;
-    FILE *fp = fopen("test.txt", "r");
+    size_t length = 0;
+    size_t line = 1;
+    size_t num_tokens = 0;
+    FILE *fp = fopen(argv[1], "r");
 
     if (fp == NULL) {
         printf("File cannot be opened.\n");
@@ -88,7 +88,12 @@ int main(int argc, char **argv) {
 
     FileInfo *f_info = read_file_contents(fp);
 
-    TokenArray *token_array = lex(f_info->contents);
+    printf("File info's string information:\n");
+    printf("contents: %s\nlength: %zu\ncapacity: %zu\n",
+           f_info->contents->chars, f_info->contents->length,
+           f_info->contents->capacity);
+
+    TokenArray *token_array = lex(f_info->contents, &line);
 
     print_token_array(token_array);
 
@@ -106,20 +111,49 @@ void run_prompt() {
 /**
  * Takes a stream of characters, returns a stream of tokens
  */
-TokenArray *lex(const String *buffer) {
+TokenArray *lex(String *buffer, size_t *line) {
     TokenArray *tokens = init_token_array();
-    char *cur = next();
-    // do stuff
+    char *cur = malloc(sizeof(char) * 2);
+    cur[1] = '\0';
 
+    // do stuff
+    for (int i = 0; i < buffer->length; ++i) {
+        cur[0] = next(buffer);
+        String *str = init_str();
+        append_char_array(str, cur);
+        switch (cur[0]) {
+        case '\n':
+            line++;
+            continue;
+        case ' ':
+            ignore_whitespace(buffer);
+            break;
+        case '(':
+            append_token(tokens, create_token(LEFT_PAREN, str, *line, NULL));
+            break;
+        }
+
+        advance(buffer);
+    }
+
+    free(cur);
     return tokens;
 }
 
-char next(FileInfo *f_info) {
-    if (f_info->current_pos >= f_info->contents->length)
-        return NULL;
+char next(String *buffer) {
+    if (buffer->current_pos >= buffer->length)
+        return EOF;
 
-    return f_info->contents->chars[f_info->current_pos++];
+    return buffer->chars[buffer->current_pos];
 }
+
+void ignore_whitespace(String *buffer) {
+    while (next(buffer) == ' ') {
+        advance(buffer);
+    }
+}
+
+void advance(String *buffer) { buffer->current_pos++; }
 
 /**
  * Initializes a Token.
@@ -131,10 +165,55 @@ char next(FileInfo *f_info) {
 Token *init_token() {
     Token *t = malloc(sizeof(Token));
     t->lexeme = init_str();
-    t->Literal.string = NULL;
-    t->Literal.identifier = NULL;
+    t->literal = init_literal();
     t->line = -1;
     t->type = -1;
 
     return t;
+}
+
+Literal *init_literal() {
+    Literal *l = malloc(sizeof(Literal));
+    if (l == NULL) {
+        perror("Unable to allocate memory for literal.\n");
+        exit(1);
+    }
+
+    l->data = NULL;
+    l->type = -1;
+
+    return l;
+}
+
+Literal *create_literal(LiteralType type, void *data) {
+    Literal *l = init_literal();
+    l->type = type;
+    l->data = data;
+
+    return l;
+}
+
+void free_literal(Literal *literal) {
+    if ((literal->type == STRING || literal->type == IDENTIFIER) &&
+        literal->data != NULL) {
+        free(literal->data);
+        literal->data = NULL;
+    }
+
+    free(literal);
+    literal = NULL;
+    assert(literal == NULL);
+}
+
+Token *create_token(TokenType type, String *lexeme, size_t line,
+                    Literal *literal) {
+    Token *token = init_token();
+
+    token->type = type;
+    token->lexeme = lexeme;
+    token->line = line;
+
+    token->literal = literal;
+
+    return token;
 }
